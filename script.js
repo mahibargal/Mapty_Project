@@ -121,10 +121,7 @@ class App {
 
     _newWorkOut(e) {
 
-        e.preventDefault();
-        //helper function
-        const validInputs = (...inputs) => inputs.every((inp) => Number.isFinite(inp));
-        const positiveInputs = (...inputs) => inputs.every((inp) => inp > 0);
+        e.preventDefault();       
         //1)get data from form;
         const workoutType = inputType.value;
         const distance = +inputDistance.value;
@@ -134,48 +131,41 @@ class App {
         let workout;
         const { lat, lng } = this.#mapEvent?.latlng;
 
-        
         //2)check if data is valid
-        if (workoutType == 'running') {
+        const validInputs = (...inputs) => inputs.every((inp) => Number.isFinite(inp));
+        const positiveInputs = (...inputs) => inputs.every((inp) => inp > 0);
 
+        //3)If workout running create running object
+        if (workoutType == 'running') {
             if (
                 // !Number.isFinite(distance) ||
                 // !Number.isFinite(duration) ||
                 // !Number.isFinite(cadence)
                 !validInputs(distance, duration, cadence) || !positiveInputs(distance, duration, cadence)
-
             ) return alert('Please input positive numbers');
-
-            workout = new Running([lat,lng],distance,duration,cadence)
+            workout = new Running([lat, lng], distance, duration, cadence)
         }
 
+        //4)If workout Cycling create Cycling object
         if (workoutType == 'cycling') {
-
-           if(!validInputs(distance, duration, elevation) || !positiveInputs(distance, duration)) return alert('Please input positive numbers');
-       
-           workout = new Cycling([lat,lng],distance,duration,elevation)
-
+            if (!validInputs(distance, duration, elevation) || !positiveInputs(distance, duration)) return alert('Please input positive numbers');
+            workout = new Cycling([lat, lng], distance, duration, elevation)
         }
+
+        //5)Add new object to workout array
         this.#workouts.push(workout)
         console.log(this.#workouts)
-        //3)If workout running create running object
-        //4)If workout Cycling create Cycling object
-        //5)Add new object to workout array
+
         //6)Render workout on map marker
-this._renderWorkoutMarker(workout)
+        this._renderWorkoutMarker(workout)
 
         inputDistance.value = inputCadence.value = inputDuration.value = inputElevation.value = ''
 
-        //map clicked , get lat lng and setup marker
-        
-
         //7)Render Workout on List
-
-
 
     }
 
-    _renderWorkoutMarker(workout){
+    _renderWorkoutMarker(workout) {
         console.log(workout.coords) //lat, lng
         L.marker(workout.coords).addTo(this.#map)
             .bindPopup(L.popup({
