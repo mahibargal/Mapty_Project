@@ -20,7 +20,8 @@ let map,mapEvent;
 class Workout {
     date = new Date();
     id = (Date.now()+ '').slice(-10);
-    constructor(coords, distance, duration) {
+    clicks = 0
+        constructor(coords, distance, duration) {
         this.coords = coords; //[lat.lng]
         this.distance = distance;//km
         this.duration = duration//min
@@ -28,6 +29,12 @@ class Workout {
     _createDescription(){
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on  ${months[this.date.getMonth()]} ${this.date.getDate()}`
+    console.log(this.description)
+    }
+
+    click(){
+      this.clicks++  
+      console.log(this.clicks);
     }
 }
 
@@ -69,10 +76,12 @@ class App {
     #map;
     #mapEvent
     #workouts = [];
+    mapZoom = 13
     constructor() {
-        form.addEventListener('submit', this._newWorkOut.bind(this))
+        form.addEventListener('submit', this._newWorkOut.bind(this));
         //changing running,cycling dropdown
-        inputType.addEventListener('change', this._toggleElevationField)
+        inputType.addEventListener('change', this._toggleElevationField);
+        containerWorkouts.addEventListener('click',this._moveToPopUp.bind(this))
         this._getPosition();
 
     }
@@ -92,7 +101,7 @@ class App {
 
         console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
-        this.#map = L.map('map').setView(coords, 13);
+        this.#map = L.map('map').setView(coords, this.mapZoom);
 
         L.tileLayer('https://tile.openstreetmap.fr/hot//{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -240,6 +249,21 @@ class App {
 </li>`
         }
         form.insertAdjacentHTML('afterend', html);
+    }
+
+    _moveToPopUp(e) {
+        const workoutEl = e.target.closest('.workout');
+        if (!workoutEl) return;
+        const workout = this.#workouts.find(work => work.id === workoutEl.dataset.id);
+        this.#map.setView(workout.coords, this.mapZoom,
+            {
+                animate: true,
+                pan: {
+                    duration: 1
+                }
+            })
+        //using the public interface
+        workout.click();
     }
 }
 
