@@ -81,7 +81,8 @@ class App {
         form.addEventListener('submit', this._newWorkOut.bind(this));
         //changing running,cycling dropdown
         inputType.addEventListener('change', this._toggleElevationField);
-        containerWorkouts.addEventListener('click',this._moveToPopUp.bind(this))
+        containerWorkouts.addEventListener('click',this._moveToPopUp.bind(this));
+        this._getWorkoutsFromLocalStorage();
         this._getPosition();
 
     }
@@ -113,7 +114,10 @@ class App {
 
         console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
-        this.#map.on('click', this._showForm.bind(this))
+        this.#map.on('click', this._showForm.bind(this));
+
+        //after map loads render prev workouts markers
+        this.#workouts.forEach(work =>this._renderWorkoutMarker(work))
 
 
     }
@@ -188,7 +192,7 @@ class App {
         //hide form
         this._hideForm();
         inputDistance.value = inputCadence.value = inputDuration.value = inputElevation.value = ''
-
+        this._setWorkoutsInLocalStorage()
 
     }
 
@@ -263,7 +267,22 @@ class App {
                 }
             })
         //using the public interface
-        workout.click();
+        // workout.click();
+    }
+
+    _setWorkoutsInLocalStorage() {
+        localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+    }
+    _getWorkoutsFromLocalStorage() {
+        const data = JSON.parse(localStorage.getItem('workouts'));
+        if (!data) return;
+        this.#workouts = data;
+        this.#workouts.forEach(work => this._renderWorkoutList(work))
+    }
+
+    reset(){
+        localStorage.removeItem('workouts');
+        location.reload();
     }
 }
 
